@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  db:
+    image: mongo:6.0
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: ${DB_NAME:-gold_jewellery}
+    ports:
+      - ""
+    volumes:
+      - db_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      MONGODB_URI: mongodb://db:27017/${DB_NAME:-gold_jewellery}
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    environment:
+      VITE_API_URL: http://localhost:5000
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
